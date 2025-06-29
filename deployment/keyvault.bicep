@@ -16,25 +16,8 @@ param enabledForTemplateDeployment bool = false
 @description('Specifies the Azure Active Directory tenant ID that should be used for authenticating requests to the key vault.')
 param tenantId string = subscription().tenantId
 
-@description('Specifies the object ID of a user, service principal or security group in the Azure Active Directory tenant for the vault.')
-param objectId string
-
-@description('Specifies the permissions to keys in the vault.')
-param keysPermissions array = [
-  'get'
-  'list'
-  'create'
-  'delete'
-  'update'
-]
-
-@description('Specifies the permissions to secrets in the vault.')
-param secretsPermissions array = [
-  'get'
-  'list'
-  'set'
-  'delete'
-]
+@description('Role assignments for the vault')
+param roleAssignments array
 
 @description('Specifies whether the key vault is a standard vault or a premium vault.')
 @allowed([
@@ -43,30 +26,32 @@ param secretsPermissions array = [
 ])
 param skuName string = 'standard'
 
-resource keyVault 'Microsoft.KeyVault/vaults@2023-07-01' = {
+resource keyVault 'Microsoft.KeyVault/vaults@2021-04-01-preview' = {
   name: keyVaultName
   location: location
   properties: {
+    enableRbacAuthorization: true
     enabledForDeployment: enabledForDeployment
     enabledForDiskEncryption: enabledForDiskEncryption
     enabledForTemplateDeployment: enabledForTemplateDeployment
     tenantId: tenantId
-    accessPolicies: [
-      {
-        objectId: objectId
-        tenantId: tenantId
-        permissions: {
-          keys: keysPermissions
-          secrets: secretsPermissions
-        }
-      }
-    ]
     sku: {
       name: skuName
       family: 'A'
     }
   }
 }
+
+resource roleAssignments 'Microsoft.Authorization/roleAssignments@2022-04-01' = [
+  for ra in roleAssignments: {
+    name: guid(keyVault.id, ra.principalId, ra.roleDefinitionId)
+    scope: keyVault
+    properties: {
+      principalId: ra.principalId
+      roleDefinitionId: ra.roleDefinitionId
+    }
+  }
+]
 
 output keyVaultName string = keyVault.name
 output keyVaultId string = keyVault.id
