@@ -9,8 +9,8 @@ param resourceGroupName string
 @description('Specifies the name of the key vault.')
 param keyVaultName string
 
-@description('Specifies the object ID of the user or service principal.')
-param objectId string
+@description('Role assignments for the vault')
+param roleAssignments array
 
 // Create Resource Group
 resource rg 'Microsoft.Resources/resourceGroups@2021-04-01' = {
@@ -25,7 +25,7 @@ module keyVault 'keyvault.bicep' = {
   params: {
     keyVaultName: keyVaultName
     location: location
-    objectId: objectId
+    roleAssignments: roleAssignments
   }
 }
 
