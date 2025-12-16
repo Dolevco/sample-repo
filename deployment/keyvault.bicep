@@ -43,6 +43,9 @@ param secretsPermissions array = [
 ])
 param skuName string = 'standard'
 
+@description('Specifies the IP addresses or CIDR ranges to allow access to the key vault.')
+param allowedIpRanges array = []
+
 resource keyVault 'Microsoft.KeyVault/vaults@2023-07-01' = {
   name: keyVaultName
   location: location
@@ -54,6 +57,34 @@ resource keyVault 'Microsoft.KeyVault/vaults@2023-07-01' = {
     accessPolicies: [
       {
         objectId: objectId
+        tenantId: tenantId
+        permissions: {
+          keys: keysPermissions
+          secrets: secretsPermissions
+        }
+      }
+    ]
+    sku: {
+      name: skuName
+      family: 'A'
+    }
+    networkAcls: {
+      bypass: 'AzureServices'
+      defaultAction: 'Deny'
+      ipRules: [for ip in allowedIpRanges: {
+        value: ip
+      }]
+    }
+    publicNetworkAccess: 'Disabled'
+    enablePurgeProtection: true
+    enableSoftDelete: true
+    softDeleteRetentionInDays: 90
+  }
+}
+
+output keyVaultName string = keyVault.name
+output keyVaultId string = keyVault.id
+
         tenantId: tenantId
         permissions: {
           keys: keysPermissions
