@@ -41,9 +41,20 @@ az deployment sub create \
 
 ## Security Considerations
 
-- The Key Vault is deployed with default network access rules
-- Access policies are configured using the provided Object ID
-- Modify the `keyvault.bicep` template to add additional security features like:
-  - Private Endpoints
-  - Network ACLs
-  - Additional access policies
+The Key Vault template has been hardened to follow recommended security controls. Key notes:
+
+- Public network access is disabled by default. Access is restricted via network ACLs (defaultAction: Deny).
+- IP rules and Virtual Network rules must be populated before deployment if you need to allow specific client IPs or VNets. Edit `deployment/keyvault.bicep` and populate the `ipRules` and `virtualNetworkRules` sections with allowed values.
+- Soft-delete is enabled to ensure recoverability of deleted vault and objects.
+- Purge protection is enabled and is irreversible once set. If you enable purge protection, you will not be able to permanently delete (purge) the vault or its objects for the lifetime of the subscription/tenant settings. Confirm this is acceptable before enabling in production.
+
+RBAC migration guidance (moving from accessPolicies to Azure RBAC):
+- The template minimizes/clears `accessPolicies` to encourage use of Azure RBAC for Key Vault data plane access.
+- To migrate:
+  1. Identify all principals currently in `accessPolicies` and the permissions they require.
+  2. Assign the appropriate Azure Key Vault data plane roles (for example: Key Vault Secrets User, Key Vault Secrets Officer, Key Vault Administrator) to those principals at the vault scope via `az role assignment create` or via the portal.
+  3. Once RBAC roles are assigned and validated, remove entries from `accessPolicies` in the template.
+
+Notes:
+- Purge protection is irreversible — you must coordinate with security/operations before enabling in production.
+- When restricting network access, ensure any automated services, CI/CD agents, or management IPs are added to `ipRules` or allowed via virtual network rules, otherwise deployment or runtime access may break.
