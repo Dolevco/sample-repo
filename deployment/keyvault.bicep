@@ -43,14 +43,39 @@ param secretsPermissions array = [
 ])
 param skuName string = 'standard'
 
+// NOTE: This deployment performs minimal security hardening to address IaC scan findings.
+// - Disables public network access
+// - Adds network ACLs with defaultAction 'Deny' (bypass AzureServices)
+// - Enables soft-delete and purge-protection
+// TODO: Migrate accessPolicies to Azure RBAC in a follow-up change. Do NOT remove accessPolicies in this PR.
+
 resource keyVault 'Microsoft.KeyVault/vaults@2023-07-01' = {
   name: keyVaultName
   location: location
   properties: {
+    // Network access: disable public network access and deny by default
+    publicNetworkAccess: 'Disabled'
+    networkAcls: {
+      defaultAction: 'Deny'
+      bypass: 'AzureServices'
+      // ipRules and virtualNetworkRules can be populated with management IPs or VNet/subnet resourceIds as needed.
+      ipRules: []
+      virtualNetworkRules: []
+      // Example placeholders (commented):
+      // ipRules: [ { value: '203.0.113.5' } ]
+      // virtualNetworkRules: [ { id: '/subscriptions/<sub>/resourceGroups/<rg>/providers/Microsoft.Network/virtualNetworks/<vnet>/subnets/<subnet>' } ]
+    }
+
+    // Data protection
+    enableSoftDelete: true
+    enablePurgeProtection: true
+
     enabledForDeployment: enabledForDeployment
     enabledForDiskEncryption: enabledForDiskEncryption
     enabledForTemplateDeployment: enabledForTemplateDeployment
     tenantId: tenantId
+
+    // Keep existing accessPolicies for backward compatibility. Migration to RBAC is TODO.
     accessPolicies: [
       {
         objectId: objectId
@@ -61,6 +86,7 @@ resource keyVault 'Microsoft.KeyVault/vaults@2023-07-01' = {
         }
       }
     ]
+
     sku: {
       name: skuName
       family: 'A'
