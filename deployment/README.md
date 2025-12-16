@@ -58,3 +58,13 @@ RBAC migration guidance (moving from accessPolicies to Azure RBAC):
 Notes:
 - Purge protection is irreversible — you must coordinate with security/operations before enabling in production.
 - When restricting network access, ensure any automated services, CI/CD agents, or management IPs are added to `ipRules` or allowed via virtual network rules, otherwise deployment or runtime access may break.
+
+## Hardening change
+
+The Key Vault template (`deployment/keyvault.bicep`) was updated and hardened in branch `fix/iac/keyvault-hardening` to:
+- Disable public network access
+- Set networkAcls defaultAction to 'Deny' (and provide placeholders for approved IPs/VNets)
+- Enable soft-delete and purge protection
+- Clear `accessPolicies` to encourage Azure RBAC for data plane access
+
+Refer to the PR for mapping to MDC findings and verification steps.
