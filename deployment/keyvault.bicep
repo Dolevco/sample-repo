@@ -51,6 +51,28 @@ resource keyVault 'Microsoft.KeyVault/vaults@2023-07-01' = {
     enabledForDiskEncryption: enabledForDiskEncryption
     enabledForTemplateDeployment: enabledForTemplateDeployment
     tenantId: tenantId
+
+    // MDC: d9be0ff8-3eb0-4348-82f6-c1e735f85983 - CKV_AZURE_189: Disable public network access
+    // Disables public access to the vault; allow access via network rules only
+    publicNetworkAccess: 'Disabled'
+
+    // MDC: d9be0ff8-3eb0-4348-82f6-c1e735f85983 - AZR-000355 / CKV_AZURE_109: network ACLs and firewall rules
+    // Default deny to enforce allow-listing of IPs/VNETs. ipRules and virtualNetworkRules are empty by default; update as required.
+    networkAcls: {
+      defaultAction: 'Deny'
+      // Keep AzureServices bypass if needed for platform services; adjust if stricter posture required
+      bypass: 'AzureServices'
+      ipRules: []
+      virtualNetworkRules: []
+    }
+
+    // MDC: d9be0ff8-3eb0-4348-82f6-c1e735f85983 - CKV_AZURE_42: Enable soft-delete to retain deleted vault objects
+    enableSoftDelete: true
+
+    // MDC: d9be0ff8-3eb0-4348-82f6-c1e735f85983 - CKV_AZURE_110: Enable purge protection
+    // NOTE: Purge protection is irreversible once enabled. Require stakeholder approval before enabling in production.
+    enablePurgeProtection: true
+
     accessPolicies: [
       {
         objectId: objectId
@@ -67,6 +89,8 @@ resource keyVault 'Microsoft.KeyVault/vaults@2023-07-01' = {
     }
   }
 }
+
+// Note: AZR-000388 (RBAC migration) is out of scope for this IaC change; RBAC migration should be planned and executed separately.
 
 output keyVaultName string = keyVault.name
 output keyVaultId string = keyVault.id
