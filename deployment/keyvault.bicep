@@ -37,10 +37,6 @@ param secretsPermissions array = [
 ]
 
 @description('Specifies whether the key vault is a standard vault or a premium vault.')
-@allowed([
-  'standard'
-  'premium'
-])
 param skuName string = 'standard'
 
 resource keyVault 'Microsoft.KeyVault/vaults@2023-07-01' = {
@@ -65,6 +61,9 @@ resource keyVault 'Microsoft.KeyVault/vaults@2023-07-01' = {
       name: skuName
       family: 'A'
     }
+    publicNetworkAccess: 'Disabled'
+    enablePurgeProtection: true
+    enableSoftDelete: true
   }
 }
 
