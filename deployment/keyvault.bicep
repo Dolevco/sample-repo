@@ -51,20 +51,23 @@ resource keyVault 'Microsoft.KeyVault/vaults@2023-07-01' = {
     enabledForDiskEncryption: enabledForDiskEncryption
     enabledForTemplateDeployment: enabledForTemplateDeployment
     tenantId: tenantId
-    accessPolicies: [
-      {
-        objectId: objectId
-        tenantId: tenantId
-        permissions: {
-          keys: keysPermissions
-          secrets: secretsPermissions
-        }
-      }
-    ]
+    accessPolicies: [] // Using RBAC, so no access policies here
+    publicNetworkAccess: 'Disabled' // Disable public network access
+    enablePurgeProtection: true // Enable purge protection
+    enableSoftDelete: true // Ensure key vault is recoverable
+    networkAcls: {
+      bypass: 'AzureServices'
+      defaultAction: 'Deny'
+      ipRules: [] // Add firewall IP rules here if needed
+      virtualNetworkRules: [] // Add virtual network rules here if needed
+    }
     sku: {
       name: skuName
       family: 'A'
     }
+  }
+  identity: {
+    type: 'SystemAssigned' // Enable system assigned managed identity for RBAC
   }
 }
 
