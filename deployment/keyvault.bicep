@@ -43,6 +43,9 @@ param secretsPermissions array = [
 ])
 param skuName string = 'standard'
 
+@description('Specifies the IP address ranges allowed to access the key vault.')
+param firewallIpRules array = []
+
 resource keyVault 'Microsoft.KeyVault/vaults@2023-07-01' = {
   name: keyVaultName
   location: location
@@ -51,16 +54,20 @@ resource keyVault 'Microsoft.KeyVault/vaults@2023-07-01' = {
     enabledForDiskEncryption: enabledForDiskEncryption
     enabledForTemplateDeployment: enabledForTemplateDeployment
     tenantId: tenantId
-    accessPolicies: [
-      {
-        objectId: objectId
-        tenantId: tenantId
-        permissions: {
-          keys: keysPermissions
-          secrets: secretsPermissions
-        }
-      }
-    ]
+    enablePurgeProtection: true
+    enableSoftDelete: true
+    publicNetworkAccess: 'Disabled'
+    networkAcls: {
+      bypass: 'AzureServices'
+      defaultAction: 'Deny'
+      ipRules: [for ip in firewallIpRules: {
+        value: ip
+      }]
+    }
+    accessPolicies: []
+    roleBasedAccessControl: {
+      enabled: true
+    }
     sku: {
       name: skuName
       family: 'A'
