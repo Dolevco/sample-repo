@@ -51,6 +51,19 @@ resource keyVault 'Microsoft.KeyVault/vaults@2023-07-01' = {
     enabledForDiskEncryption: enabledForDiskEncryption
     enabledForTemplateDeployment: enabledForTemplateDeployment
     tenantId: tenantId
+    publicNetworkAccess: 'Disabled'
+    networkAcls: {
+      bypass: 'AzureServices'
+      defaultAction: 'Deny'
+      ipRules: [
+        // Add specific IP addresses or ranges allowed to access the vault
+      ]
+      virtualNetworkRules: [
+        // Add specific virtual network resource IDs allowed to access the vault
+      ]
+    }
+    enablePurgeProtection: true
+    enableSoftDelete: true
     accessPolicies: [
       {
         objectId: objectId
@@ -65,6 +78,16 @@ resource keyVault 'Microsoft.KeyVault/vaults@2023-07-01' = {
       name: skuName
       family: 'A'
     }
+  }
+}
+
+// RBAC role assignment for Key Vault access
+resource keyVaultReaderRoleAssignment 'Microsoft.Authorization/roleAssignments@2022-04-01' = {
+  name: guid(keyVault.id, 'ReaderRoleAssignment')
+  scope: keyVault
+  properties: {
+    roleDefinitionId: subscriptionResourceId('Microsoft.Authorization/roleDefinitions', '21090545-7ca7-4776-b22c-e363652d74d2') // Key Vault Reader
+    principalId: objectId
   }
 }
 
