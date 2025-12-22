@@ -53,17 +53,30 @@ resource keyVault 'Microsoft.KeyVault/vaults@2023-07-01' = {
     tenantId: tenantId
     accessPolicies: [
       {
-        objectId: objectId
         tenantId: tenantId
+        objectId: objectId
         permissions: {
           keys: keysPermissions
           secrets: secretsPermissions
         }
+        // Use role-based access control by setting accessPolicies to empty and enabling RBAC on the vault
       }
     ]
     sku: {
       name: skuName
       family: 'A'
+    }
+    publicNetworkAccess: 'Disabled' // Disable public network access
+    enablePurgeProtection: true // Enable purge protection
+    networkAcls: {
+      bypass: 'AzureServices'
+      defaultAction: 'Deny'
+      ipRules: [
+        // Add allowed IP addresses or ranges here
+      ]
+      virtualNetworkRules: [
+        // Add virtual network rules here
+      ]
     }
   }
 }
