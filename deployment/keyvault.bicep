@@ -23,17 +23,12 @@ param objectId string
 param keysPermissions array = [
   'get'
   'list'
-  'create'
-  'delete'
-  'update'
 ]
 
 @description('Specifies the permissions to secrets in the vault.')
 param secretsPermissions array = [
   'get'
   'list'
-  'set'
-  'delete'
 ]
 
 @description('Specifies whether the key vault is a standard vault or a premium vault.')
@@ -41,7 +36,12 @@ param secretsPermissions array = [
   'standard'
   'premium'
 ])
-param skuName string = 'standard'
+param skuName string = 'premium'
+
+@description('Specifies the IP address ranges that are allowed to access the key vault.')
+param allowedIpRanges array = [
+  '10.0.0.0/24'
+]
 
 resource keyVault 'Microsoft.KeyVault/vaults@2023-07-01' = {
   name: keyVaultName
@@ -65,6 +65,15 @@ resource keyVault 'Microsoft.KeyVault/vaults@2023-07-01' = {
       name: skuName
       family: 'A'
     }
+    networkAcls: {
+      bypass: 'AzureServices'
+      defaultAction: 'Deny'
+      ipRules: [for ip in allowedIpRanges: {
+        value: ip
+      }]
+    }
+    enableSoftDelete: true
+    enablePurgeProtection: true
   }
 }
 
