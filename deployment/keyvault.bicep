@@ -23,17 +23,12 @@ param objectId string
 param keysPermissions array = [
   'get'
   'list'
-  'create'
-  'delete'
-  'update'
 ]
 
 @description('Specifies the permissions to secrets in the vault.')
 param secretsPermissions array = [
   'get'
   'list'
-  'set'
-  'delete'
 ]
 
 @description('Specifies whether the key vault is a standard vault or a premium vault.')
