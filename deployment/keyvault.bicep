@@ -65,6 +65,28 @@ resource keyVault 'Microsoft.KeyVault/vaults@2023-07-01' = {
       name: skuName
       family: 'A'
     }
+    publicNetworkAccess: 'Disabled'
+    networkAcls: {
+      bypass: 'AzureServices'
+      defaultAction: 'Deny'
+      ipRules: []
+      virtualNetworkRules: []
+    }
+    enablePurgeProtection: true
+    enableSoftDelete: true
+  }
+  identity: {
+    type: 'SystemAssigned'
+  }
+}
+
+resource roleAssignment 'Microsoft.Authorization/roleAssignments@2022-04-01' = {
+  name: guid(keyVault.id, 'KeyVaultContributor')
+  scope: keyVault
+  properties: {
+    roleDefinitionId: subscriptionResourceId('Microsoft.Authorization/roleDefinitions', 'b86a8fe4-44ce-4948-aee5-eccb2c155cd7') // Key Vault Contributor
+    principalId: keyVault.identity.principalId
+    principalType: 'ServicePrincipal'
   }
 }
 
