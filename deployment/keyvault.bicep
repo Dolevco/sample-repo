@@ -16,32 +16,29 @@ param enabledForTemplateDeployment bool = false
 @description('Specifies the Azure Active Directory tenant ID that should be used for authenticating requests to the key vault.')
 param tenantId string = subscription().tenantId
 
-@description('Specifies the object ID of a user, service principal or security group in the Azure Active Directory tenant for the vault.')
-param objectId string
-
-@description('Specifies the permissions to keys in the vault.')
-param keysPermissions array = [
-  'get'
-  'list'
-  'create'
-  'delete'
-  'update'
-]
-
-@description('Specifies the permissions to secrets in the vault.')
-param secretsPermissions array = [
-  'get'
-  'list'
-  'set'
-  'delete'
-]
-
 @description('Specifies whether the key vault is a standard vault or a premium vault.')
 @allowed([
   'standard'
   'premium'
 ])
 param skuName string = 'standard'
+
+@description('Enable soft delete for Key Vault')
+param enableSoftDelete bool = true
+
+@description('Enable purge protection for Key Vault')
+param enablePurgeProtection bool = true
+
+@description('Enable RBAC authorization for Key Vault')
+param enableRbacAuthorization bool = true
+
+@description('Key Vault network ACL configuration')
+param networkAcls object = {
+  defaultAction: 'Deny'
+  bypass: 'AzureServices'
+  ipRules: []
+  virtualNetworkRules: []
+}
 
 resource keyVault 'Microsoft.KeyVault/vaults@2023-07-01' = {
   name: keyVaultName
@@ -51,16 +48,11 @@ resource keyVault 'Microsoft.KeyVault/vaults@2023-07-01' = {
     enabledForDiskEncryption: enabledForDiskEncryption
     enabledForTemplateDeployment: enabledForTemplateDeployment
     tenantId: tenantId
-    accessPolicies: [
-      {
-        objectId: objectId
-        tenantId: tenantId
-        permissions: {
-          keys: keysPermissions
-          secrets: secretsPermissions
-        }
-      }
-    ]
+    enableRbacAuthorization: enableRbacAuthorization
+    enableSoftDelete: enableSoftDelete
+    enablePurgeProtection: enablePurgeProtection
+    publicNetworkAccess: 'Disabled'
+    networkAcls: networkAcls
     sku: {
       name: skuName
       family: 'A'
