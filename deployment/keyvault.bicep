@@ -43,6 +43,9 @@ param secretsPermissions array = [
 ])
 param skuName string = 'standard'
 
+@description('Role definition ID for RBAC')
+param roleDefinitionId string = '/providers/Microsoft.Authorization/roleDefinitions/4633458b-17de-408a-b874-0445c86b69e6'
+
 resource keyVault 'Microsoft.KeyVault/vaults@2023-07-01' = {
   name: keyVaultName
   location: location
@@ -51,20 +54,25 @@ resource keyVault 'Microsoft.KeyVault/vaults@2023-07-01' = {
     enabledForDiskEncryption: enabledForDiskEncryption
     enabledForTemplateDeployment: enabledForTemplateDeployment
     tenantId: tenantId
-    accessPolicies: [
-      {
-        objectId: objectId
-        tenantId: tenantId
-        permissions: {
-          keys: keysPermissions
-          secrets: secretsPermissions
-        }
-      }
-    ]
+    publicNetworkAccess: false
+    enableSoftDelete: true
+    enablePurgeProtection: true
+    networkAcls: {
+      defaultAction: 'Deny'
+      ipRules: []
+      bypass: 'AzureServices'
+    }
     sku: {
       name: skuName
       family: 'A'
     }
+    roleAssignments: [
+      {
+        roleDefinitionId: roleDefinitionId
+        principalId: objectId
+        principalType: 'User'
+      }
+    ]
   }
 }
 
