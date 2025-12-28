@@ -46,25 +46,37 @@ param skuName string = 'standard'
 resource keyVault 'Microsoft.KeyVault/vaults@2023-07-01' = {
   name: keyVaultName
   location: location
+  identity: {
+    type: 'SystemAssigned'
+  }
   properties: {
     enabledForDeployment: enabledForDeployment
     enabledForDiskEncryption: enabledForDiskEncryption
     enabledForTemplateDeployment: enabledForTemplateDeployment
     tenantId: tenantId
-    accessPolicies: [
-      {
-        objectId: objectId
-        tenantId: tenantId
-        permissions: {
-          keys: keysPermissions
-          secrets: secretsPermissions
-        }
-      }
-    ]
+    publicNetworkAccess: 'Disabled'
+    enableSoftDelete: true
+    enablePurgeProtection: true
+    networkAcls: {
+      defaultAction: 'Deny'
+      bypass: 'AzureServices'
+      ipRules: []
+      bicepAccess: true
+    }
     sku: {
       name: skuName
       family: 'A'
     }
+  }
+}
+
+resource keyVaultRoleAssignment 'Microsoft.Authorization/roleAssignments@2022-04-01' = {
+  name: guid(keyVault.id, subscription().id, 'Key Vault Crypto Officer')
+  scope: keyVault
+  properties: {
+    roleDefinitionId: subscription().id + '/providers/Microsoft.Authorization/roleDefinitions/14b46e9e-c2b5-41b5-931c-3f1626cb9294'
+    principalId: keyVault.identity.principalId
+    principalType: 'ServicePrincipal'
   }
 }
 
