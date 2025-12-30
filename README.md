@@ -1,54 +1,78 @@
-# React + TypeScript + Vite
+# Sample Repo
 
-This template provides a minimal setup to get React working in Vite with HMR and some ESLint rules.
+## Overview
+This is a React Single Page Application (SPA) built with Vite and TypeScript. It includes deployment infrastructure using Bicep templates in the `deployment/` directory. The app features a simple 'Hello World!' component and supports modern React hooks and utilities.
 
-Currently, two official plugins are available:
+Key technologies:
+- **React**: ^19.1.0 (with react-dom)
+- **Vite**: ^6.3.5 (build tool and dev server)
+- **TypeScript**: ~5.8.3
+- **ESLint**: For code linting with React hooks and refresh plugins
+- **Bicep**: For Azure infrastructure deployment
 
-- [@vitejs/plugin-react](https://github.com/vitejs/vite-plugin-react/blob/main/packages/plugin-react) uses [Babel](https://babeljs.io/) for Fast Refresh
-- [@vitejs/plugin-react-swc](https://github.com/vitejs/vite-plugin-react/blob/main/packages/plugin-react-swc) uses [SWC](https://swc.rs/) for Fast Refresh
+## Components
+The source code is organized in the `src/` directory:
 
-## Expanding the ESLint configuration
+- **src/App.tsx**: Main application component rendering a simple 'Hello World!' heading in a container div. Uses CSS modules via `App.css`.
+- **src/main.tsx**: Entry point that renders the App component into the DOM using ReactDOM (imported from react-dom/client).
+- **src/App.css**: Styles for the App component, including container layout.
+- **src/index.css**: Global styles, likely including Tailwind or base resets.
+- **src/assets/react.svg**: Sample React logo asset.
+- **src/vite-env.d.ts**: TypeScript declarations for Vite environment.
 
-If you are developing a production application, we recommend updating the configuration to enable type-aware lint rules:
+The app uses functional components with hooks support (via ESLint plugins). No additional utils or complex components present; it's a minimal starter template.
 
-```js
-export default tseslint.config({
-  extends: [
-    // Remove ...tseslint.configs.recommended and replace with this
-    ...tseslint.configs.recommendedTypeChecked,
-    // Alternatively, use this for stricter rules
-    ...tseslint.configs.strictTypeChecked,
-    // Optionally, add this for stylistic rules
-    ...tseslint.configs.stylisticTypeChecked,
-  ],
-  languageOptions: {
-    // other options...
-    parserOptions: {
-      project: ['./tsconfig.node.json', './tsconfig.app.json'],
-      tsconfigRootDir: import.meta.dirname,
-    },
-  },
-})
+Directory structure:
+```
+src/
+├── App.tsx
+├── App.css
+├── assets/
+│   └── react.svg
+├── index.css
+├── main.tsx
+└── vite-env.d.ts
 ```
 
-You can also install [eslint-plugin-react-x](https://github.com/Rel1cx/eslint-react/tree/main/packages/plugins/eslint-plugin-react-x) and [eslint-plugin-react-dom](https://github.com/Rel1cx/eslint-react/tree/main/packages/plugins/eslint-plugin-react-dom) for React-specific lint rules:
+## Build and Development
 
-```js
-// eslint.config.js
-import reactX from 'eslint-plugin-react-x'
-import reactDom from 'eslint-plugin-react-dom'
+### Prerequisites
+- Node.js (with npm)
+- TypeScript
 
-export default tseslint.config({
-  plugins: {
-    // Add the react-x and react-dom plugins
-    'react-x': reactX,
-    'react-dom': reactDom,
-  },
-  rules: {
-    // other rules...
-    // Enable its recommended typescript rules
-    ...reactX.configs['recommended-typescript'].rules,
-    ...reactDom.configs.recommended.rules,
-  },
-})
+### Scripts (from package.json)
+- `npm run dev`: Start development server with Vite.
+- `npm run build`: Compile TypeScript (`tsc -b`) and bundle with Vite (`vite build`). Outputs to `dist/` directory.
+- `npm run lint`: Run ESLint on the codebase.
+- `npm run preview`: Preview the built app with Vite.
+
+### Build Process
+1. Install dependencies: `npm install`
+2. Development: `npm run dev` (runs on http://localhost:5173)
+3. Build for production:
+   - TypeScript checks and compiles using `tsconfig.json` (references `tsconfig.app.json` for app and `tsconfig.node.json` for Vite config).
+   - Vite bundles the app with React plugin (`@vitejs/plugin-react`) for JSX/TSX support.
+   - Output: Optimized static files in `dist/` (HTML, JS, CSS).
+4. Lint: `npm run lint` to ensure code quality.
+
+### Deployment
+- Frontend: Deploy `dist/` contents to a static host (e.g., Azure Static Web Apps).
+- Infrastructure: Use Bicep files in `deployment/`:
+  - `main.bicep`: Main deployment template.
+  - `keyvault.bicep`: Key Vault module.
+  - `parameters.json`: Deployment parameters.
+  Run with Azure CLI: `az deployment group create --resource-group <rg> --template-file deployment/main.bicep --parameters deployment/parameters.json`.
+
+## Project Structure
+```
+/ (root)
+├── src/                 # React source code
+├── public/              # Static assets (e.g., vite.svg)
+├── deployment/          # Bicep infrastructure templates
+├── .gitignore
+├── index.html           # App entry HTML
+├── package.json         # Dependencies and scripts
+├── tsconfig.json        # TS config (app + node)
+├── vite.config.ts       # Vite config with React plugin
+└── README.md            # This file
 ```
