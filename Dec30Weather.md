@@ -1,0 +1,1 @@
+Tomorrow in Tel Aviv will have varying temperatures with specific high/low values and precipitation chances as per AccuWeather forecast.
