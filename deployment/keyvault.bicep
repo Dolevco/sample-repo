@@ -50,11 +50,15 @@ resource keyVault 'Microsoft.KeyVault/vaults@2023-07-01' = {
     enabledForDeployment: enabledForDeployment
     enabledForDiskEncryption: enabledForDiskEncryption
     enabledForTemplateDeployment: enabledForTemplateDeployment
+networkAcls: { defaultAction: Deny, bypass: AzureServices, ipRules: [], virtualNetworkRules: [] }
+roleAssignments: []
     tenantId: tenantId
     publicNetworkAccess: 'Disabled'
+enablePurgeProtection: true
     enableSoftDelete: true
     enablePurgeProtection: true
     networkAcls: {
+roleAssignments: []
       defaultAction: 'Deny'
       bypass: 'AzureServices'
       ipRules: []
