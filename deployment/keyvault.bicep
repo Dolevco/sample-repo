@@ -43,6 +43,9 @@ param secretsPermissions array = [
 ])
 param skuName string = 'standard'
 
+@description('Specifies the list of IP addresses or CIDR ranges allowed to access the key vault.')
+param firewallIpRules array = []
+
 resource keyVault 'Microsoft.KeyVault/vaults@2023-07-01' = {
   name: keyVaultName
   location: location
@@ -65,6 +68,16 @@ resource keyVault 'Microsoft.KeyVault/vaults@2023-07-01' = {
       name: skuName
       family: 'A'
     }
+    publicNetworkAccess: 'Disabled'
+    enablePurgeProtection: true
+    networkAcls: {
+      defaultAction: 'Deny'
+      bypass: 'AzureServices'
+      ipRules: [for ip in firewallIpRules: {
+        value: ip
+      }]
+    }
+    enableRbacAuthorization: true
   }
 }
 
