@@ -43,7 +43,17 @@ param secretsPermissions array = [
 ])
 param skuName string = 'standard'
 
-resource keyVault 'Microsoft.KeyVault/vaults@2023-07-01' = {
+$1
+  enableSoftDelete: true
+  enablePurgeProtection: true
+  publicNetworkAccess: 'Disabled'
+  networkAcls: {
+    bypass: 'AzureServices'
+    defaultAction: 'Deny'
+    ipRules: []
+    virtualNetworkRules: []
+  }
+  enableRbacAuthorization: true
   name: keyVaultName
   location: location
   properties: {
