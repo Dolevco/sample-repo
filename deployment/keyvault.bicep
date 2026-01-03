@@ -51,22 +51,29 @@ resource keyVault 'Microsoft.KeyVault/vaults@2023-07-01' = {
     enabledForDiskEncryption: enabledForDiskEncryption
     enabledForTemplateDeployment: enabledForTemplateDeployment
     tenantId: tenantId
-    accessPolicies: [
-      {
-        objectId: objectId
-        tenantId: tenantId
-        permissions: {
-          keys: keysPermissions
-          secrets: secretsPermissions
-        }
-      }
-    ]
     sku: {
+      name: skuName
+      family: 'A'
+    }
+    softDeleteRetentionInDays: 90
+    enableSoftDelete: true
+    enablePurgeProtection: true
+    networkAcls: {
+      defaultAction: 'Deny'
+      bypass: 'AzureServices'
+      ipRules: []
+      virtualNetworkRules: []
+    }
+    publicNetworkAccess: false
       name: skuName
       family: 'A'
     }
   }
 }
+
+resource keyVaultIdentity 'Microsoft.KeyVault/vaults/providers/roleAssignments@2023-07-01' = [for assignment in []: {
+  // RBAC assignments would be added here post-deployment
+}]
 
 output keyVaultName string = keyVault.name
 output keyVaultId string = keyVault.id
