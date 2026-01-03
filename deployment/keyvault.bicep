@@ -19,22 +19,13 @@ param tenantId string = subscription().tenantId
 @description('Specifies the object ID of a user, service principal or security group in the Azure Active Directory tenant for the vault.')
 param objectId string
 
-@description('Specifies the permissions to keys in the vault.')
-param keysPermissions array = [
-  'get'
-  'list'
-  'create'
-  'delete'
-  'update'
-]
-
-@description('Specifies the permissions to secrets in the vault.')
-param secretsPermissions array = [
-  'get'
-  'list'
-  'set'
-  'delete'
-]
+@description('Specifies the principal type for RBAC assignments.')
+@allowed([
+  'User'
+  'ServicePrincipal'
+  'Group'
+])
+param principalType string = 'User'
 
 @description('Specifies whether the key vault is a standard vault or a premium vault.')
 @allowed([
@@ -51,20 +42,40 @@ resource keyVault 'Microsoft.KeyVault/vaults@2023-07-01' = {
     enabledForDiskEncryption: enabledForDiskEncryption
     enabledForTemplateDeployment: enabledForTemplateDeployment
     tenantId: tenantId
-    accessPolicies: [
-      {
-        objectId: objectId
-        tenantId: tenantId
-        permissions: {
-          keys: keysPermissions
-          secrets: secretsPermissions
-        }
-      }
-    ]
     sku: {
       name: skuName
       family: 'A'
     }
+    softDeleteRetentionInDays: 90
+    enableSoftDelete: true
+    enablePurgeProtection: true
+    publicNetworkAccess: 'Disabled'
+    networkAcls: {
+      defaultAction: 'Deny'
+      bypass: 'AzureServices'
+      ipRules: []
+      virtualNetworkRules: []
+    }
+  }
+}
+
+resource cryptoRoleAssignment 'Microsoft.Authorization/roleAssignments@2022-04-01' = {
+  name: guid(keyVault.id, subscription().tenantId, objectId, 'crypto-user')
+  scope: keyVault
+  properties: {
+    roleDefinitionId: subscriptionResourceId('Microsoft.Authorization/roleDefinitions', '14b46e9e-c2b5-41b0-80ff-4a5215c7f45b')
+    principalId: objectId
+    principalType: principalType
+  }
+}
+
+resource secretsRoleAssignment 'Microsoft.Authorization/roleAssignments@2022-04-01' = {
+  name: guid(keyVault.id, subscription().tenantId, objectId, 'secrets-user')
+  scope: keyVault
+  properties: {
+    roleDefinitionId: subscriptionResourceId('Microsoft.Authorization/roleDefinitions', '4633458b-17de-408a-b874-0445c86b69e6')
+    principalId: objectId
+    principalType: principalType
   }
 }
 
