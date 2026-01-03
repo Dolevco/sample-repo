@@ -47,17 +47,23 @@ resource keyVault 'Microsoft.KeyVault/vaults@2023-07-01' = {
   name: keyVaultName
   location: location
   properties: {
-    enabledForDeployment: enabledForDeployment
-    enabledForDiskEncryption: enabledForDiskEncryption
-    enabledForTemplateDeployment: enabledForTemplateDeployment
+    enabledForDeployment: false
+    enabledForDiskEncryption: false
+    enabledForTemplateDeployment: false
     tenantId: tenantId
     accessPolicies: [
       {
         objectId: objectId
         tenantId: tenantId
         permissions: {
-          keys: keysPermissions
-          secrets: secretsPermissions
+          keys: [
+            'get'
+            'list'
+          ]
+          secrets: [
+            'get'
+            'list'
+          ]
         }
       }
     ]
