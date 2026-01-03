@@ -65,6 +65,20 @@ resource keyVault 'Microsoft.KeyVault/vaults@2023-07-01' = {
       name: skuName
       family: 'A'
     }
+    networkAcls: {
+      bypass: 'AzureServices'
+      defaultAction: 'Deny'
+      ipRules: [
+        {
+          value: '10.0.0.0/24'
+        }
+        {
+          value: '192.168.1.0/24'
+        }
+      ]
+    }
+    enablePurgeProtection: true
+    enableSoftDelete: true
   }
 }
 
