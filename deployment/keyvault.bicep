@@ -47,6 +47,17 @@ resource keyVault 'Microsoft.KeyVault/vaults@2023-07-01' = {
   name: keyVaultName
   location: location
   properties: {
+    publicNetworkAccess: false
+    enableRbacAuthorization: true
+    enablePurgeProtection: true
+    softDelete: {
+      retentionInDays: 90
+    }
+    networkAcls: {
+      defaultAction: "Deny"
+      bypass: "AzureServices"
+      ipRules: []
+    }
     enabledForDeployment: enabledForDeployment
     enabledForDiskEncryption: enabledForDiskEncryption
     enabledForTemplateDeployment: enabledForTemplateDeployment
