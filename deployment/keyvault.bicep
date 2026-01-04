@@ -50,23 +50,41 @@ resource keyVault 'Microsoft.KeyVault/vaults@2023-07-01' = {
     enabledForDeployment: enabledForDeployment
     enabledForDiskEncryption: enabledForDiskEncryption
     enabledForTemplateDeployment: enabledForTemplateDeployment
-    tenantId: tenantId
-    accessPolicies: [
-      {
-        objectId: objectId
-        tenantId: tenantId
-        permissions: {
-          keys: keysPermissions
-          secrets: secretsPermissions
-        }
-      }
-    ]
     sku: {
       name: skuName
       family: 'A'
     }
+    publicNetworkAccess: false
+    enablePurgeProtection: true
+    networkAcls: {
+      defaultAction: 'Deny'
+      bypass: 'AzureServices'
+      ipRules: []
+      bpeRules: []
+    }
+  }
+  identity: {
+    type: 'SystemAssigned'
   }
 }
+
+@description('Array of role assignments for RBAC')
+param roleAssignments array = [
+  {
+    roleDefinitionId: '/providers/Microsoft.Authorization/roleDefinitions/4633458b-17de-408a-b874-0445c86b69e6' // Key Vault Secrets User
+  }
+  // Add more as needed
+]
+
+resource keyVaultRoleAssignment 'Microsoft.Authorization/roleAssignments@2022-04-01' = [for assignment in roleAssignments: {
+  name: newGuid()
+  scope: keyVault
+  properties: {
+    roleDefinitionId: assignment.roleDefinitionId
+    principalId: keyVault.identity.principalId
+    principalType: 'ServicePrincipal'
+  }
+}]
 
 output keyVaultName string = keyVault.name
 output keyVaultId string = keyVault.id
