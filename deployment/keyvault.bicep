@@ -65,6 +65,16 @@ resource keyVault 'Microsoft.KeyVault/vaults@2023-07-01' = {
       name: skuName
       family: 'A'
     }
+    publicNetworkAccess: 'Disabled'
+    enablePurgeProtection: true
+    enableSoftDelete: true
+    networkAcls: {
+      bypass: 'AzureServices'
+      defaultAction: 'Deny'
+      ipRules: ipRules
+      virtualNetworkRules: virtualNetworkRules
+    }
+    accessPolicies: [] // Use Azure RBAC, so no access policies here
   }
 }
 
