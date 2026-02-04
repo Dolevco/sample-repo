@@ -51,20 +51,27 @@ resource keyVault 'Microsoft.KeyVault/vaults@2023-07-01' = {
     enabledForDiskEncryption: enabledForDiskEncryption
     enabledForTemplateDeployment: enabledForTemplateDeployment
     tenantId: tenantId
-    accessPolicies: [
-      {
-        objectId: objectId
-        tenantId: tenantId
-        permissions: {
-          keys: keysPermissions
-          secrets: secretsPermissions
-        }
-      }
-    ]
     sku: {
       name: skuName
       family: 'A'
     }
+    enableRbacAuthorization: true
+    publicNetworkAccess: 'Disabled'
+    enablePurgeProtection: true
+    enableSoftDelete: true
+    networkAcls: {
+      defaultAction: 'Deny'
+      bypass: 'AzureServices'
+      ipRules: []
+    }
+    accessPolicies: []
+    roleAssignments: [
+      {
+        roleDefinitionId: subscriptionResourceId('Microsoft.Authorization/roleDefinitions/b86a8fe4-44ce-4948-aee5-eccb85c155eb', subscription().id)
+        principalId: objectId
+        principalType: 'User'
+      }
+    ]
   }
 }
 
