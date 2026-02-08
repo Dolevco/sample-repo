@@ -51,16 +51,12 @@ resource keyVault 'Microsoft.KeyVault/vaults@2023-07-01' = {
     enabledForDiskEncryption: enabledForDiskEncryption
     enabledForTemplateDeployment: enabledForTemplateDeployment
     tenantId: tenantId
-    accessPolicies: [
-      {
-        objectId: objectId
-        tenantId: tenantId
-        permissions: {
-          keys: keysPermissions
-          secrets: secretsPermissions
-        }
-      }
-    ]
+    publicNetworkAccess: 'Disabled'
+    enablePurgeProtection: true
+    networkAcls: {
+      defaultAction: 'Deny'
+    }
+    enableRbacAuthorization: true
     sku: {
       name: skuName
       family: 'A'
